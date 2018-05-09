@@ -31,7 +31,7 @@ dfRaschD = dfData[headQ[0:-1]]
 np.random.seed(10)
 #set number of test items and number of students
 iTest = 100
-nStudent = 1000
+nStudent = 500
 
 # simulate student abilities
 sdStu = 0.8
@@ -130,10 +130,17 @@ w_success=optimize.success
 delta_w=w_new[nStudent:]
 beta_w=w_new[:nStudent]
 
+pRaschEST = np.zeros((nStudent,iTest))
+for n in range (nStudent):
+    for i in range(iTest):
+        pRaschEST[n,i] = np.exp(beta_w[n]-delta_w[i])/(1+np.exp(beta_w[n]-delta_w[i]))
+
+plt.scatter(pRasch[:100],pRaschEST[:100])
+plt.plot(pRasch[:100],pRasch[:100])
 #plot real delta against estimated delta
 #plt.scatter(delta_w,deltaTrue)
 #plt.show()
 
 #plot real beta against estimated beta
-plt.scatter(beta_w, betaTrue)
+#plt.scatter(beta_w, betaTrue)
 plt.show()
