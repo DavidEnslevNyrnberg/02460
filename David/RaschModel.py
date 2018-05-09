@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from scipy.optimize import minimize
 
-Dir = r'C:\Users\Teresa\Documents\DTU\Semester3\Advanced_ML\02460\David\Data'
-gradeDir = Dir+r'\final_grades.xlsx'
-intermediateDir = Dir+r'\intermediate_grades.xlsx'
+Dir = os.getcwd()
+gradeDir = Dir+r'\Data\final_grades.xlsx'
+intermediateDir = Dir+r'\Data\intermediate_grades.xlsx'
 
 dfGrade = pd.read_excel(gradeDir, sheet_name=r'Exam (Second time)')
 dfGrade.head()
@@ -83,12 +83,6 @@ dfpRasch = pd.DataFrame(pRasch)
 #print(SimRaschD)
 dfSimRaschD=pd.DataFrame(SimRaschD)
 #dfpRasch.head(5)
-
-# ~~~~~~~~~~~~~~~~~~~~
-
-#filePATH = r'C:\Users\david\OneDrive\Davids_doc\DTU\12th_Semester\02460_Advanced_Machine_Learning\SimRaschFile.csv'
-#dfSimRaschD.to_csv(path_or_buf=filePATH, sep=',', index=False)
-#dfSimRaschD.head(5)
 
 # ~~~~~~~~~~~~~~~~~~~~
 
