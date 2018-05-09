@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from scipy.optimize import minimize
 
+#Loading of real data
 Dir = os.getcwd()
 gradeDir = Dir+r'\Data\final_grades.xlsx'
 intermediateDir = Dir+r'\Data\intermediate_grades.xlsx'
@@ -13,41 +14,35 @@ dfGrade = pd.read_excel(gradeDir, sheet_name=r'Exam (Second time)')
 dfGrade.head()
 
 # ~~~~~~~~~~~~~~~~~~~~
-
+#converting to input form of Rasch model
 headQ = list(dfGrade)[1:]
-# print(headQ)
-
 normPoint = dfGrade[headQ].max()[0:16]
-# print(normPoint)
-
 bolGrade = (dfGrade[headQ]/normPoint).round()
-# print(bolGrade)
 
 dfData = dfGrade.copy()
 dfData[headQ] = bolGrade[headQ]
 dfRaschD = dfData[headQ[0:-1]]
-dfRaschD.head(5)
+#dfRaschD.head(5)
 
 # ~~~~~~~~~~~~~~~~~~~~
 
-# import string
-
+#CREATE SIMULATED DATA
+#fix random seed for comparing results
 np.random.seed(10)
-
+#set number of test items and number of students
 iTest = 100
 nStudent = 1000
-# letters = list(string.ascii_lowercase[:jTest])
 
-# sim students
+# simulate student abilities
 sdStu = 0.8
 meanStu = 1.5
 betaTrue = np.random.normal(meanStu, sdStu, nStudent)
-# sim test difficulty
+# simulate test difficulty
 sdTest = 0.2
 meanTest = 0.7
 deltaTrue = np.random.normal(meanTest, sdTest, iTest)
 
-#plot simmulation
+#plot simulation
 """
 fig = plt.figure(figsize=(14,3))
 fig.tight_layout()
@@ -69,6 +64,8 @@ plt.plot(binsTest, 1/(sdTest*np.sqrt(2*np.pi))*np.exp(-(binsTest-meanTest)**2/(2
 
 # ~~~~~~~~~~~~~~~~~~~~
 
+#now for the simulated parameters, define the probabilities of scoring 1, and draw each result from
+#from a Bernoulli distribution
 pRasch = np.zeros((nStudent,iTest))
 SimRaschD = np.zeros((nStudent,iTest))
 
@@ -85,22 +82,16 @@ dfSimRaschD=pd.DataFrame(SimRaschD)
 #dfpRasch.head(5)
 
 # ~~~~~~~~~~~~~~~~~~~~
-
-outputRasch = dfSimRaschD
-print(outputRasch.shape)
+#set which input Data should be used
+inputRasch = dfSimRaschD
+print(inputRasch.shape)
 
 # ~~~~~~~~~~~~~~~~~~~~
-
+#set initial gradient guess to zero
 w_initial = np.zeros(nStudent + iTest)
 w = w_initial
-"""
-step_size = 0.05
-w_gradient = np.ones(nStudent + iTest)
 
-gradBeta = np.ones(nStudent)
-gradDelta = np.ones(iTest)
-"""
-
+# a function to return the negative Loglikelihood of the Rasch model to be minimized
 def Rasch_Log_Likelihood(w, data_y,lam):
     (N, I) = data_y.shape
     wBeta = w[0:N]#.reshape([N, 1])  # w_beta
@@ -112,6 +103,7 @@ def Rasch_Log_Likelihood(w, data_y,lam):
     likelihood=-np.sum(np.sum(wlogMatrix,axis=1),axis=0)+np.sum(np.multiply(wDelta,np.sum(data_y, axis=0)))-np.sum(np.multiply(wBeta,np.sum(data_y,axis=1)))+lam*w.T.dot(w)
     return(likelihood)
 
+# a function to return the gradient of the negative Loglikelihood; used for minimizing
 def gradient(w, data_y,lam):
     (N, I) = data_y.shape
     wBeta = w[0:N].reshape([N, 1])  # w_beta
@@ -126,40 +118,22 @@ def gradient(w, data_y,lam):
     w_gradient = np.concatenate([gradBeta, gradDelta])
     return w_gradient
 
-data_y=outputRasch
-(N,I)=data_y.shape
-#L=Rasch_Log_Likelihood(w_gradient, data_y)
-#print(L)
+#optional: set regularization parameter
 lam=0
-optimize=minimize(Rasch_Log_Likelihood,w,args=(outputRasch,lam),jac=gradient, options={'maxiter': 5000000, 'disp': True})
+#find parameters to minimize the negative loglikelihood
+optimize=minimize(Rasch_Log_Likelihood,w,args=(inputRasch,lam),jac=gradient, options={'maxiter': 5000000, 'disp': True})
 w_new=optimize.x
 w_message=optimize.message
 w_success=optimize.success
 
-
-print(deltaTrue);
+#print(deltaTrue);
 delta_w=w_new[nStudent:]
 beta_w=w_new[:nStudent]
 
+#plot real delta against estimated delta
 #plt.scatter(delta_w,deltaTrue)
 #plt.show()
 
+#plot real beta against estimated beta
 plt.scatter(beta_w, betaTrue)
 plt.show()
-# optimizer for gradient decent - Martin link to optimizer
-"""
-step = 0
-while (np.linalg.norm(w_gradient)>10**(-10)) & (step<500000):
-        # Update weights with gradient descent
-        w_gradient = gradient(data_y=outputRasch, w=w)
-        w -= step_size*w_gradient
-        if step%1000==0:
-            print(step)
-        step+=1
-
-wTrue = np.concatenate((betaTrue, deltaTrue))
-print(wTrue[nStudent:]); print(w[nStudent:])
-"""
-# ~~~~~~~~~~~~~~~~~~~~
-
-#print('finish')
