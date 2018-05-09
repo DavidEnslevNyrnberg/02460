@@ -47,7 +47,7 @@ deltaTrue = np.random.normal(meanTest, sdTest, iTest)
 
 # Plot simulation
 if doPLOT == 1:
-    fig = plt.figure(figsize=(14,3))
+    fig = plt.figure(0, figsize=(14,3))
     fig.tight_layout()
     ax1 = fig.add_subplot(131)
     ax1.set_xlabel(r'Ability $\beta_n$')
@@ -141,13 +141,13 @@ if doPLOT==1:
     plt.title(r'True $\delta_i$ versus Estimated $\delta_i$')
     plt.xlabel(r'True $\delta_i$')
     plt.ylabel(r'Estimated $\delta_i$')
-    plt.legend(['estVtrue','trueLine'],loc=0)
+    plt.legend(['estVtrue','trueLine'],loc=2)
     plt.subplot(2,1,2)
     plt.plot(beta_w, betaTrue, 'bo', betaTrue, betaTrue, 'g-')
     plt.title(r'True $\beta_n$ versus Estimated $\beta_n$')
     plt.xlabel(r'True $\beta_n$')
     plt.ylabel(r'Estimated $\beta_n$')
-    plt.legend(['estVtrue','trueLine'],loc=0)
+    plt.legend(['estVtrue','trueLine'],loc=2)
     plt.show()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,6 +157,17 @@ for n in range(nStudent):
     for i in range(iTest):
         pRaschEST[n,i] = np.exp(beta_w[n]-delta_w[i])/(1+np.exp(beta_w[n]-delta_w[i]))
 
-plt.scatter(pRasch[:100], pRaschEST[:100])
-plt.plot(pRasch[:100], pRasch[:100])
-plt.show()
+if doPLOT==1:
+    # plots for real weights against estimated weights
+    plt.figure(2, figsize=[6,6])
+    plt.tight_layout()
+    plt.plot(pRasch[:100], pRaschEST[:100], 'bx', pRasch[:100], pRasch[:100], 'g-')
+    plt.title(r'Estimated $p(X_{ni}=1)$ vs True $p(X_{ni}=1)$')
+    plt.xlabel(r'True $p(X_{ni}=1)$')
+    plt.ylabel(r'Estimated $p(X_{ni}=1)$')
+    plt.legend(['Estimated','True'],loc=2)
+    plt.show()
+
+# plt.scatter(pRasch[:100], pRaschEST[:100])
+# plt.plot(pRasch[:100], pRasch[:100])
+# plt.show()
