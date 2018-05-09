@@ -3,8 +3,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from scipy.optimize import minimize
 
-Dir = r'C:\Users\david\OneDrive\Davids_doc\DTU\12th_Semester\02460_Advanced_Machine_Learning\Edutech\EPM Dataset 2\Data'
+Dir = r'C:\Users\Teresa\Documents\DTU\Semester3\Advanced_ML\02460\David\Data'
 gradeDir = Dir+r'\final_grades.xlsx'
 intermediateDir = Dir+r'\intermediate_grades.xlsx'
 
@@ -33,7 +34,7 @@ dfRaschD.head(5)
 
 np.random.seed(10)
 
-iTest = 20
+iTest = 100
 nStudent = 1000
 # letters = list(string.ascii_lowercase[:jTest])
 
@@ -47,6 +48,7 @@ meanTest = 0.7
 deltaTrue = np.random.normal(meanTest, sdTest, iTest)
 
 #plot simmulation
+"""
 fig = plt.figure(figsize=(14,3))
 fig.tight_layout()
 ax1 = fig.add_subplot(131)
@@ -61,7 +63,7 @@ ax2.set_ylabel('Percent of questions')
 ax2.set_title("$i=20$, Test difficulty distribution")
 ountTest, binsTest, ignoredTest = plt.hist(deltaTrue, bins=20, normed=True)
 plt.plot(binsTest, 1/(sdTest*np.sqrt(2*np.pi))*np.exp(-(binsTest-meanTest)**2/(2*sdTest**2)), linewidth=2, color='r')
-
+"""
 # plt.show()
 # print(betaTrue); print(deltaTrue)
 
@@ -76,49 +78,82 @@ for n in range (nStudent):
         SimRaschD[n,i] = np.random.binomial(1,pRasch[n,i])
 
 
-# print(pRasch)
-dfpRasch = pd.DataFrame(pRasch.round(2))
-# print(SimRaschD)
+#print(pRasch)
+dfpRasch = pd.DataFrame(pRasch)
+#print(SimRaschD)
 dfSimRaschD=pd.DataFrame(SimRaschD)
-dfpRasch.head(5)
+#dfpRasch.head(5)
 
 # ~~~~~~~~~~~~~~~~~~~~
 
-filePATH = r'C:\Users\david\OneDrive\Davids_doc\DTU\12th_Semester\02460_Advanced_Machine_Learning\SimRaschFile.csv'
-dfSimRaschD.to_csv(path_or_buf=filePATH, sep=',', index=False)
-dfSimRaschD.head(5)
+#filePATH = r'C:\Users\david\OneDrive\Davids_doc\DTU\12th_Semester\02460_Advanced_Machine_Learning\SimRaschFile.csv'
+#dfSimRaschD.to_csv(path_or_buf=filePATH, sep=',', index=False)
+#dfSimRaschD.head(5)
 
 # ~~~~~~~~~~~~~~~~~~~~
 
 outputRasch = dfSimRaschD
-# print(outputRasch.shape)
+print(outputRasch.shape)
 
 # ~~~~~~~~~~~~~~~~~~~~
 
 w_initial = np.zeros(nStudent + iTest)
 w = w_initial
+"""
 step_size = 0.05
 w_gradient = np.ones(nStudent + iTest)
 
 gradBeta = np.ones(nStudent)
 gradDelta = np.ones(iTest)
+"""
 
+def Rasch_Log_Likelihood(w, data_y,lam):
+    (N, I) = data_y.shape
+    wBeta = w[0:N]#.reshape([N, 1])  # w_beta
+    wDelta = w[N:N + I]#.reshape([1, I])  # w_delta
 
-def gradient(data_y, w, lam='none'):
+    wMatrix = np.array([[n - i for n in wBeta] for i in wDelta])
+    wExpMatrix = np.exp(wMatrix)
+    wlogMatrix = np.log(1+wExpMatrix)
+    likelihood=-np.sum(np.sum(wlogMatrix,axis=1),axis=0)+np.sum(np.multiply(wDelta,np.sum(data_y, axis=0)))-np.sum(np.multiply(wBeta,np.sum(data_y,axis=1)))+lam*w.T.dot(w)
+    return(likelihood)
+
+def gradient(w, data_y,lam):
     (N, I) = data_y.shape
     wBeta = w[0:N].reshape([N, 1])  # w_beta
     wDelta = w[N:N + I].reshape([1, I])  # w_delta
 
-    wMatrix = np.array([i - n for n in wBeta for i in wDelta])
+    wMatrix = np.array([n - i for n in wBeta for i in wDelta])
     wExpMatrix = scipy.special.expit(wMatrix)
 
-    gradBeta = -np.sum(wExpMatrix, axis=1) + np.sum(data_y, axis=1)
-    gradDelta = np.sum(wExpMatrix, axis=0) - np.sum(data_y, axis=0)
+    gradBeta = np.sum(wExpMatrix, axis=1) - np.sum(data_y, axis=1)+2*lam*w[0:N]
+    gradDelta = -np.sum(wExpMatrix, axis=0) + np.sum(data_y, axis=0)+2*lam*w[N:N+I]
 
     w_gradient = np.concatenate([gradBeta, gradDelta])
     return w_gradient
 
+data_y=outputRasch
+(N,I)=data_y.shape
+#L=Rasch_Log_Likelihood(w_gradient, data_y)
+#print(L)
+lam=0
+optimize=minimize(Rasch_Log_Likelihood,w,args=(outputRasch,lam),jac=gradient, options={'maxiter': 5000000, 'disp': True})
+w_new=optimize.x
+w_message=optimize.message
+w_success=optimize.success
+
+
+print(deltaTrue);
+delta_w=w_new[nStudent:]
+beta_w=w_new[:nStudent]
+
+#plt.scatter(delta_w,deltaTrue)
+#plt.show()
+
+plt.scatter(beta_w, betaTrue)
+plt.show()
 # optimizer for gradient decent - Martin link to optimizer
+"""
 step = 0
 while (np.linalg.norm(w_gradient)>10**(-10)) & (step<500000):
         # Update weights with gradient descent
@@ -130,6 +165,7 @@ while (np.linalg.norm(w_gradient)>10**(-10)) & (step<500000):
 
 wTrue = np.concatenate((betaTrue, deltaTrue))
 print(wTrue[nStudent:]); print(w[nStudent:])
+"""
 # ~~~~~~~~~~~~~~~~~~~~
 
-print('finish')
+#print('finish')
