@@ -92,18 +92,19 @@ w_initial = np.zeros(nStudent + iTest)
 w = w_initial
 
 # a function to return the negative Loglikelihood of the Rasch model to be minimized
-def Rasch_Log_Likelihood(w, data_y,lam):
+def Private_Rasch_Log_Likelihood(w, data_y,lam,b):
     (N, I) = data_y.shape
     wBeta = w[0:N]#.reshape([N, 1])  # w_beta
     wDelta = w[N:N + I]#.reshape([1, I])  # w_delta
 
-    wMatrix = np.array([[i - n for n in wBeta] for i in wDelta])
-    wlogMatrix=scipy.special.expit(wMatrix)
-    likelihood=np.sum(np.sum(wlogMatrix,axis=1),axis=0)+np.sum(np.multiply(wDelta,np.sum(data_y, axis=0)))-np.sum(np.multiply(wBeta,np.sum(data_y,axis=1)))+lam*w.T.dot(w)
+    wMatrix = np.array([[n - i for n in wBeta] for i in wDelta])
+    wExpMatrix = np.exp(wMatrix)
+    wlogMatrix = np.log(1+wExpMatrix)
+    likelihood=-np.sum(np.sum(wlogMatrix,axis=1),axis=0)+np.sum(np.multiply(wDelta,np.sum(data_y, axis=0)))-np.sum(np.multiply(wBeta,np.sum(data_y,axis=1)))+lam*w.T.dot(w)+b.T.dot(wDelta)
     return(likelihood)
 
 # a function to return the gradient of the negative Loglikelihood; used for minimizing
-def gradient(w, data_y,lam):
+def Private_gradient(w, data_y,lam,b):
     (N, I) = data_y.shape
     wBeta = w[0:N].reshape([N, 1])  # w_beta
     wDelta = w[N:N + I].reshape([1, I])  # w_delta
@@ -112,15 +113,25 @@ def gradient(w, data_y,lam):
     wExpMatrix = scipy.special.expit(wMatrix)
 
     gradBeta = np.sum(wExpMatrix, axis=1) - np.sum(data_y, axis=1)+2*lam*w[0:N]
-    gradDelta = -np.sum(wExpMatrix, axis=0) + np.sum(data_y, axis=0)+2*lam*w[N:N+I]
+    gradDelta = -np.sum(wExpMatrix, axis=0) + np.sum(data_y, axis=0)+2*lam*w[N:N+I]+b
 
     w_gradient = np.concatenate([gradBeta, gradDelta])
     return w_gradient
 
 #optional: set regularization parameter
 lam=3
+#define noise vector
+# first, draw a noise vector b distributed like exp(-eps/2*||b||)
+# to do this, first pick the norm according to gamma distribution:
+epsilon=10
+b_norm = np.random.gamma(iTest, scale=iTest / epsilon)
+print("b_norm" + str(b_norm))
+# b_norm=0
+# then direction randomly in d-dimensional space (http://mathworld.wolfram.com/HyperspherePointPicking.html)
+bx = np.random.normal(size=iTest)
+b = bx / np.linalg.norm(bx) * b_norm
 #find parameters to minimize the negative loglikelihood
-optimize=minimize(Rasch_Log_Likelihood,w,args=(inputRasch,lam),jac=gradient, method='BFGS',options={'maxiter': 5000000, 'disp': True})
+optimize=minimize(Private_Rasch_Log_Likelihood,w,args=(inputRasch,lam,b),jac=Private_gradient, options={'maxiter': 5000000, 'disp': True})
 w_new=optimize.x
 w_message=optimize.message
 w_success=optimize.success
