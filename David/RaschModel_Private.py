@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from scipy.optimize import minimize
-
+DOPLOTS=
 #Loading of real data
 Dir = os.getcwd()
 gradeDir = Dir+r'\Data\final_grades.xlsx'
