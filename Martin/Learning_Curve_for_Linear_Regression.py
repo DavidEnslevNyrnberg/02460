@@ -34,7 +34,7 @@ def lin(w, x):
 #data_y = np.array([0.1,0.5,0.6])
 
 Nmin = 1
-Nmax = 200
+Nmax = 30000
 Q = 100
 Error1 = np.zeros(Nmax-Nmin)
 MeanError1 = np.zeros(Nmax-Nmin)
@@ -50,11 +50,11 @@ data_y = data_x[:,1]*10+5+np.random.rand(Nmax)
 for j in range(Q):
     
     for n in range(Nmin,Nmax):
-        w = lin_reg(data_x[0:n],data_y[0:n],10000)
+        w = lin_reg(data_x[0:n],data_y[0:n],10)
         Error1[n-Nmin] = np.mean((lin(w,data_x[:,1])-data_y)**2) 
-        w = lin_reg(data_x[0:n],data_y[0:n],1000)
+        w = lin_reg(data_x[0:n],data_y[0:n],1)
         Error2[n-Nmin] = np.mean((lin(w,data_x[:,1])-data_y)**2) 
-        w = lin_reg(data_x[0:n],data_y[0:n],100)
+        w = lin_reg(data_x[0:n],data_y[0:n],0.1)
         Error3[n-Nmin] = np.mean((lin(w,data_x[:,1])-data_y)**2) 
     MeanError1 = MeanError1+Error1
     MeanError2 = MeanError2+Error2
@@ -65,21 +65,21 @@ MeanError3 = MeanError3/Q
 
 #plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError1,color='red')
 #plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError2,color='blue',linestyle='--')
-fig = plt.figure(figsize=(10,10))
-plot1, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError1,color='red', linewidth=2.0, label='eps=10000')
-plot2, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError2,color='blue', linewidth=2.0,linestyle='--', label='eps=1000')
-plot3, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError3,color='green', linewidth=2.0,linestyle='-.', label='eps=100')
+fig = plt.figure(figsize=(13,10))
+plot1, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError1,color='red', linewidth=2.0, label='eps=10')
+plot2, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError2,color='blue', linewidth=2.0,linestyle='--', label='eps=1')
+plot3, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError3,color='green', linewidth=2.0,linestyle='-.', label='eps=0.1')
 plt.rc('font', size=30)
 plt.ylabel('Mean Squared Error')
 plt.xlabel('Dataset Size')
 plt.title('Learning Curves')
-plt.yticks(np.arange(0, 1.1, step=0.1))
-plt.xticks(np.arange(0, 201, step=20))
+#plt.yticks(np.arange(0, 1.1, step=0.1))
+#plt.xticks(np.arange(0, 201, step=20))
 plt.legend(handles=[plot1, plot2, plot3])
 plt.axis([0,Nmax,0,1]) # Try to remove this
 plt.show()
 
-#fig.savefig('Learning_Curve.png')
+fig.savefig('Learning_Curve2.png')
 
 #plt.scatter(data_x[:,1],data_y,color='red')
 #plt.plot(data_x[0:n],lin(w,data_x[0:n]),color='blue',linestyle='--')

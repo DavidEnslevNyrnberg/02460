@@ -34,7 +34,7 @@ def lin(w, x):
 #data_y = np.array([0.1,0.5,0.6])
 
 Nmin = 5
-Nmax = 200
+Nmax = 20000
 Q = 100
 Error1 = np.zeros(Nmax-Nmin)
 MeanError1 = np.zeros(Nmax-Nmin)
@@ -50,11 +50,11 @@ data_y = data_x[:,1]*10+5+np.random.rand(Nmax)
 for j in range(Q):
     
     for n in range(Nmin,Nmax):
-        w = lin_reg(data_x[0:n],data_y[0:n],10000)
+        w = lin_reg(data_x[0:n],data_y[0:n],10)
         Error1[n-Nmin] = np.mean((lin(w,data_x[:,1])-data_y)**2) 
-        w = lin_reg(data_x[0:n],data_y[0:n],1000)
+        w = lin_reg(data_x[0:n],data_y[0:n],1)
         Error2[n-Nmin] = np.mean((lin(w,data_x[:,1])-data_y)**2) 
-        w = lin_reg(data_x[0:n],data_y[0:n],100)
+        w = lin_reg(data_x[0:n],data_y[0:n],0.1)
         Error3[n-Nmin] = np.mean((lin(w,data_x[:,1])-data_y)**2) 
     MeanError1 = MeanError1+Error1
     MeanError2 = MeanError2+Error2
@@ -65,9 +65,9 @@ MeanError3 = MeanError3/Q
 
 #plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError1,color='red')
 #plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError2,color='blue',linestyle='--')
-plot1, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError1,color='red', label='eps=10000')
-plot2, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError2,color='blue',linestyle='--', label='eps=1000')
-plot3, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError3,color='green',linestyle='-.', label='eps=100')
+plot1, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError1,color='red', label='eps=10')
+plot2, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError2,color='blue',linestyle='--', label='eps=1')
+plot3, = plt.plot(np.linspace(Nmin,Nmax,Nmax-Nmin),MeanError3,color='green',linestyle='-.', label='eps=0.1')
 plt.legend(handles=[plot1, plot2, plot3])
 plt.axis([Nmin,Nmax,0,1]) # Try to remove this
 plt.show()
