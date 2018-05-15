@@ -30,8 +30,8 @@ dfRaschD = dfData[headQ[0:-1]]
 #fix random seed for comparing results
 np.random.seed(10)
 #set number of test items and number of students
-iTest = 40
-nStudent = 1000
+iTest = 16
+nStudent = 62
 
 # simulate student abilities
 sdStu = 0.8
@@ -83,7 +83,7 @@ dfSimRaschD=pd.DataFrame(SimRaschD)
 
 # ~~~~~~~~~~~~~~~~~~~~
 #set which input Data should be used
-inputRasch = dfSimRaschD
+inputRasch = dfRaschD
 print(inputRasch.shape)
 
 # ~~~~~~~~~~~~~~~~~~~~
@@ -119,7 +119,7 @@ def Private_gradient(w, data_y,lam,b):
     return w_gradient
 
 #optional: set regularization parameter
-lam=3
+lam=0
 #define noise vector
 # first, draw a noise vector b distributed like exp(-eps/2*||b||)
 # to do this, first pick the norm according to gamma distribution:
@@ -145,8 +145,15 @@ for n in range (nStudent):
     for i in range(iTest):
         pRaschEST[n,i] = np.exp(beta_w[n]-delta_w[i])/(1+np.exp(beta_w[n]-delta_w[i]))
 
+file = open('probabilities.txt','w',encoding='utf8')
+n=10
+for i in range(iTest):
+    file.write(str(pRaschEST[n,i])+' & ')
+file.write('\n')
+"""
 plt.scatter(pRasch[:100],pRaschEST[:100])
 plt.plot(pRasch[:100],pRasch[:100])
+"""
 #plot real delta against estimated delta
 #plt.scatter(delta_w,deltaTrue)
 #plt.show()
