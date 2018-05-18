@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from scipy.optimize import minimize
-DOPLOTS=
+DOPLOTS=0
 #Loading of real data
 Dir = os.getcwd()
 gradeDir = Dir+r'\Data\final_grades.xlsx'
@@ -124,7 +124,7 @@ lam=0
 # first, draw a noise vector b distributed like exp(-eps/2*||b||)
 # to do this, first pick the norm according to gamma distribution:
 epsilon=10
-b_norm = np.random.gamma(iTest, scale=iTest / epsilon)
+b_norm = np.random.gamma(iTest, scale=np.sqrt(iTest) / epsilon)
 print("b_norm" + str(b_norm))
 # b_norm=0
 # then direction randomly in d-dimensional space (http://mathworld.wolfram.com/HyperspherePointPicking.html)
