@@ -97,8 +97,8 @@ def Private_gradient(w, data_y,lam,b):
     w_gradient = np.concatenate([gradBeta, gradDelta])
     return w_gradient
 
-# Optional: set regularization parameter
-lam = 0
+# set regularization parameter
+lam = 0.01
 
 pRaschEST = np.zeros((4, iTest, nStudent))
 # Find parameters to minimize the negative loglikelihood
@@ -116,32 +116,39 @@ beta_w = w_new[:nStudent]
 for n in range(nStudent):
     for i in range(iTest):
         pRaschEST[0,i,n] = np.exp(beta_w[n]-delta_w[i])/(1+np.exp(beta_w[n]-delta_w[i]))
+prob_vec=pRaschEST[0,:,:].reshape((1,nStudent*iTest))
 
+corr=np.zeros(3)
+repetitions=10
 for j in range(3):
-    epsilon=10^(j+1)
-    b_norm = np.random.gamma(iTest, scale=np.sqrt(iTest) / epsilon)
-    print("b_norm" + str(b_norm))
-    # b_norm=0
-    # then direction randomly in d-dimensional space (http://mathworld.wolfram.com/HyperspherePointPicking.html)
-    bx = np.random.normal(size=iTest)
-    b = bx / np.linalg.norm(bx) * b_norm
-    # Find parameters to minimize the negative loglikelihood
-    optimize = minimize(Private_Rasch_Log_Likelihood, w, args=(inputRasch, lam, b), jac=Private_gradient,
+    for rep in range(repetitions):
+        epsilon=10^(j)
+        b_norm = np.random.gamma(iTest, scale=np.sqrt(iTest) / epsilon)
+        # then direction randomly in d-dimensional space (http://mathworld.wolfram.com/HyperspherePointPicking.html)
+        bx = np.random.normal(size=iTest)
+        b = bx / np.linalg.norm(bx) * b_norm
+        # Find parameters to minimize the negative loglikelihood
+        optimize = minimize(Private_Rasch_Log_Likelihood, w, args=(inputRasch, lam, b), jac=Private_gradient,
                         options={'maxiter': 5000000, 'disp': True})
-    w_new = optimize.x
-    w_message = optimize.message
-    w_success = optimize.success
+        w_new = optimize.x
+        w_message = optimize.message
+        w_success = optimize.success
 
-    # print(deltaTrue);
-    delta_w = w_new[nStudent:]
-    beta_w = w_new[:nStudent]
+        # print(deltaTrue);
+        delta_w = w_new[nStudent:]
+        beta_w = w_new[:nStudent]
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    for n in range(nStudent):
-        for i in range(iTest):
-            pRaschEST[j+1,i, n] = np.exp(beta_w[n] - delta_w[i]) / (1 + np.exp(beta_w[n] - delta_w[i]))
+        for n in range(nStudent):
+            for i in range(iTest):
+                pRaschEST[j+1,i, n] = np.exp(beta_w[n] - delta_w[i]) / (1 + np.exp(beta_w[n] - delta_w[i]))
+        prob_EST=pRaschEST[j+1,:,:].reshape((1,nStudent*iTest))
+        cov=np.cov(prob_vec,prob_EST)
+        corr[j]+=cov[0,1]/(np.sqrt(cov[0,0])*np.sqrt(cov[1,1]))
 
+corr=corr/repetitions
+print(corr)
 #x=range(1,iTest+1)
 #x=np.linspace(0,1,20)
 plt.figure(2, figsize=[18, 8])
@@ -151,10 +158,10 @@ plt.scatter(pRaschEST[0,:,:],pRaschEST[2,:,:], c='b', marker='x',linewidths=5)
 plt.scatter(pRaschEST[0,:,:],pRaschEST[3,:,:], c='r', marker='x',linewidths=5)
 x=np.linspace(0,1,20)
 plt.plot(x,x,'k-')
-plt.title(r'Estimated Probabilities - Data size: [N=%d, I=%d]' % (nStudent, iTest), fontdict={'fontsize': 24})
-plt.xlabel(r'Non-Private Estimates', fontdict={'fontsize': 20})
-plt.ylabel(r'Private Estimates', fontdict={'fontsize': 20})
-plt.legend(['correlation=1','eps=10', 'eps=100','eps=1000'], loc=3, fontsize=14)
-plt.tick_params(axis='both', labelsize=14)
-plt.savefig('StudentExample')
+plt.title(r'Estimated Probabilities - Data size: [N=%d, I=%d]' % (nStudent, iTest), fontdict={'fontsize': 30})
+plt.xlabel(r'Non-Private Estimates', fontdict={'fontsize': 30})
+plt.ylabel(r'Private Estimates', fontdict={'fontsize': 30})
+plt.legend(['correlation=1','eps=1', 'eps=10','eps=100'], loc=2, fontsize=20)
+plt.tick_params(axis='both', labelsize=20)
+plt.savefig('StudentExample_2')
 plt.show()

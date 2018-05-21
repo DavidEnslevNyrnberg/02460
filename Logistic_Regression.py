@@ -35,6 +35,7 @@ def gradient(lam,data_x,data_y,w,b):
     (n,d)=data_x.shape
     return (lam*w+b/n-1/n*data_x.T.dot(np.multiply(data_y,1/(1+np.exp(np.multiply(data_y,(data_x.dot(w))))))))
     #return(lam*w+b/n+1/n*sum([-data_y[i]*data_x[i,:]*1/(1+math.exp(data_y[i]*w.dot(data_x[i,:]))) for i in range(n)]))
+
 num_epsilons=4
 epsilon_array=[100,10,1,0.5]
 num_set_sizes=20
@@ -54,6 +55,7 @@ simulated_labels = np.hstack((-np.ones(num_observations), np.ones(num_observatio
 # sklearn's algorithm assumes the labels are in {0,1}
 simulated_labels_2 = np.hstack((np.zeros(num_observations), np.ones(num_observations)))
 
+"""
 for eps in range(num_epsilons):
     for i in range(num_set_sizes):
 
@@ -106,6 +108,8 @@ error_test=np.zeros((num_epsilons,num_set_sizes))
 ind=range(100,(num_set_sizes+1)*100,100)
 
 """
+ind=range(100,(num_set_sizes+1)*100,100)
+
 file = open('error_values.txt','r',encoding='utf8')
 print(file.readline())
 for eps in range(num_epsilons):
@@ -115,7 +119,7 @@ for eps in range(num_epsilons):
         print(s)
         error_train[eps,i]=s[0]
         error_test[eps,i]=s[1]
-"""
+
 
 fig = plt.figure(figsize=(20,10))
 plt.rc('font',size=20)
@@ -125,19 +129,22 @@ ax2 = fig.add_subplot(122)
 ax1.set(title="Training Error", xlabel="Size of Data Set", ylabel="Misclassification Rate")
 ax2.set(title="Test Error", xlabel="Size of Data Set", ylabel="Misclassification Rate")
 
-ax1.plot(ind[5:],error_train[0,5:],color="blue",label="eps=100")
-ax1.plot(ind[5:],error_train[1,5:],color="green",label="eps=10")
-ax1.plot(ind[5:],error_train[2,5:],color="red",label="eps=1")
-ax1.plot(ind[5:],error_train[3,5:],color="xkcd:purple",label="eps=0.5")
+ax1.plot(ind,error_train[0,:],color="blue",label="eps=100")
+ax1.plot(ind,error_train[1,:],color="green",label="eps=10")
+ax1.plot(ind,error_train[2,:],color="red",label="eps=1")
+ax1.plot(ind,error_train[3,:],color="xkcd:purple",label="eps=0.5")
 #ax1.rc('font', size=30)
+ax1.axis([ind[0],ind[-1],0,0.15])
+#plt.axis([0,Nmax,0,1])
 ax1.legend()
 
-ax2.plot(ind[5:],error_test[0,5:],color="blue",label="eps=100")
-ax2.plot(ind[5:],error_test[1,5:],color="green",label="eps=10")
-ax2.plot(ind[5:],error_test[2,5:],color="red",label="eps=1")
-ax2.plot(ind[5:],error_test[3,5:],color="xkcd:purple",label="eps=0.5")
+ax2.plot(ind,error_test[0,:],color="blue",label="eps=100")
+ax2.plot(ind,error_test[1,:],color="green",label="eps=10")
+ax2.plot(ind,error_test[2,:],color="red",label="eps=1")
+ax2.plot(ind,error_test[3,:],color="xkcd:purple",label="eps=0.5")
 #ax2.rc('font', size=30)
 ax2.legend()
+ax2.axis([ind[0],ind[-1],0,0.15])
 plt.show()
 
 #print(y_predicted)

@@ -30,16 +30,16 @@ dfRaschD = dfData[headQ[0:-1]]
 #fix random seed for comparing results
 np.random.seed(10)
 #set number of test items and number of students
-iTest = 16
-nStudent = 62
+iTest = 20
+nStudent = 200
 
 # simulate student abilities
-sdStu = 0.8
-meanStu = 1.5
+sdStu = 1
+meanStu = 0
 betaTrue = np.random.normal(meanStu, sdStu, nStudent)
 # simulate test difficulty
-sdTest = 0.2
-meanTest = 0.7
+sdTest = 1
+meanTest = 0
 deltaTrue = np.random.normal(meanTest, sdTest, iTest)
 
 #plot simulation
@@ -83,7 +83,7 @@ dfSimRaschD=pd.DataFrame(SimRaschD)
 
 # ~~~~~~~~~~~~~~~~~~~~
 #set which input Data should be used
-inputRasch = dfRaschD
+inputRasch = dfSimRaschD
 print(inputRasch.shape)
 
 # ~~~~~~~~~~~~~~~~~~~~
@@ -119,12 +119,13 @@ def Private_gradient(w, data_y,lam,b):
     return w_gradient
 
 #optional: set regularization parameter
-lam=0
+lam=0.1
 #define noise vector
 # first, draw a noise vector b distributed like exp(-eps/2*||b||)
 # to do this, first pick the norm according to gamma distribution:
-epsilon=10
-b_norm = np.random.gamma(iTest, scale=np.sqrt(iTest) / epsilon)
+epsilon=10000
+b_norm=0
+#b_norm = np.random.gamma(iTest, scale=np.sqrt(iTest) / epsilon)
 print("b_norm" + str(b_norm))
 # b_norm=0
 # then direction randomly in d-dimensional space (http://mathworld.wolfram.com/HyperspherePointPicking.html)
@@ -145,15 +146,13 @@ for n in range (nStudent):
     for i in range(iTest):
         pRaschEST[n,i] = np.exp(beta_w[n]-delta_w[i])/(1+np.exp(beta_w[n]-delta_w[i]))
 
-file = open('probabilities.txt','w',encoding='utf8')
-n=10
-for i in range(iTest):
-    file.write(str(pRaschEST[n,i])+' & ')
-file.write('\n')
-"""
-plt.scatter(pRasch[:100],pRaschEST[:100])
-plt.plot(pRasch[:100],pRasch[:100])
-"""
+pRasch=pRasch.reshape((1,nStudent*iTest))
+#print(pRasch.shape)
+pRaschEST=pRaschEST.reshape((1,nStudent*iTest))
+#print(np.cov(pRasch,pRaschEST))
+plt.scatter(pRasch,pRaschEST)
+plt.plot(pRasch,pRasch)
+
 #plot real delta against estimated delta
 #plt.scatter(delta_w,deltaTrue)
 #plt.show()
